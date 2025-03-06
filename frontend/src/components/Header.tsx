@@ -10,7 +10,7 @@ export function Header() {
       <header 
         className={cn(
           "fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-300 backdrop-blur-md",
-          "[data-scrolled=true]_&:bg-white/80 [data-scrolled=true]_&:shadow-sm",
+          "[data-scrolled=true]_&:bg-background/80 [data-scrolled=true]_&:shadow-sm",
           "[data-scrolled=false]_&:bg-transparent"
         )}
       >
@@ -34,13 +34,13 @@ export function Header() {
           </Link>
           
           <nav className="hidden md:flex items-center space-x-8" aria-label="Main Navigation">
-            <Link href="#features" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            <Link href="#features" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
               Features
             </Link>
-            <Link href="#how-it-works" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            <Link href="#how-it-works" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
               How It Works
             </Link>
-            <Link href="#testimonials" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            <Link href="#testimonials" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
               Results
             </Link>
           </nav>
@@ -49,7 +49,7 @@ export function Header() {
             <Link href="/login" passHref>
               <Button 
                 variant="ghost" 
-                className="hidden md:inline-flex text-sm font-medium text-gray-700 hover:text-gray-900"
+                className="hidden md:inline-flex text-sm font-medium text-foreground/80 hover:text-foreground"
                 aria-label="Log in to your account"
               >
                 Log in

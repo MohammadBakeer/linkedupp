@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Mail, Linkedin, MessageSquare, PhoneCall } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { AuthButton } from '@/components/AuthButton';
 
 export function Hero() {
   return (
@@ -27,20 +28,18 @@ export function Hero() {
           </p>
           
           <div className="flex flex-wrap gap-4 justify-center pt-4">
-            <Button 
+            <AuthButton 
               className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-12 px-6"
-              aria-label="Start for free"
             >
               Start for Free
               <span className="ml-1" aria-hidden="true">→</span>
-            </Button>
-            <Button 
+            </AuthButton>
+            <AuthButton 
               variant="outline" 
               className="gap-2 h-12 px-6 bg-white/50"
-              aria-label="See how it works"
             >
               See How It Works
-            </Button>
+            </AuthButton>
           </div>
           
           <div className="flex items-center justify-center gap-6 pt-8 flex-wrap">
