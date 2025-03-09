@@ -6,4 +6,5 @@ CREATE TABLE profiles (
   role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   updated_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
+); 
+
