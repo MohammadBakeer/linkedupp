@@ -2,6 +2,9 @@ import { Metadata } from 'next';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { AppHeader } from '@/components/AppHeader';
+import { cookies } from 'next/headers'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'LinkedUpp Console',
@@ -13,14 +16,79 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ConsolePage() {
-  // Fetch name, email, avatar, 
-  const user = {
+// This is a server component (no 'use client' directive)
+export default async function ConsolePage() {
+  // Create a Supabase client for the server component
+  const supabase = createServerComponentClient({ cookies });
+  
+  // Get the session and user data
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  // Get the user data securely (as recommended by Supabase)
+  const { data: { user } } = session 
+    ? await supabase.auth.getUser() 
+    : { data: { user: null } };
+  
+  // Log authentication status
+  console.log('Console page: User authenticated:', !!session);
+  
+  // Default user data
+  let userData = {
     name: 'Sarah Johnson',
     email: 'sarah.j@example.com',
-    avatarUrl: '',
-    initials: 'SJ',
   };
+
+  // If we have a user, use their data
+  if (user) {
+    userData = {
+      name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
+      email: user.email || userData.email,
+    };
+    
+    console.log('Using authenticated user data');
+    
+    // Get the access token directly from the session
+    if (session?.access_token) {
+      console.log('Found access token in session, making API call');
+      
+      try {
+        // Call the backend API with the token
+        const response = await fetch('http://localhost:8000/api/profile', {
+          cache: 'no-store',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        
+        console.log('API Response Status:', response.status);
+        
+        if (response.ok) {
+          const apiUserData = await response.json();
+          console.log('API user data received:', apiUserData);
+          
+          // Update user data with API response
+          if (apiUserData.name || apiUserData.email) {
+            userData = {
+              name: apiUserData.name || userData.name,
+              email: apiUserData.email || userData.email,
+            };
+            
+            console.log('Using API user data');
+          }
+        } else {
+          // Log error details for debugging
+          const errorText = await response.text();
+          console.error('API Error response:', response.status, errorText);
+        }
+      } catch (error) {
+        console.error('Error calling API:', error);
+      }
+    } else {
+      console.log('No access token found in session');
+    }
+  } else {
+    console.log('No authenticated user, using default data');
+  }
 
   return (
     <div className="min-h-screen bg-[#020817] flex flex-col">
@@ -30,14 +98,14 @@ export default function ConsolePage() {
       <div className="gradient-blur gradient-blur-pink absolute top-1/2 left-1/3 opacity-50"></div>
 
       {/* Reusable header component */}
-      <AppHeader user={user} />
+      <AppHeader user={userData} />
 
       {/* Main content */}
       <main className="container mx-auto py-10 flex-1">
         {/* Welcome section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-[hsl(var(--green))] to-[hsl(var(--cyan))]">
-            Welcome back, {user.name.split(' ')[0]}!
+            Welcome back, {userData.name.split(' ')[0]}!
           </h1>
           <p className="text-muted-foreground">
             Manage your connections and outreach campaigns from your console.

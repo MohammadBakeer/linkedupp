@@ -19,8 +19,6 @@ import { useAuth } from '@/context/AuthContext';
 interface UserProfile {
   name: string;
   email: string;
-  avatarUrl: string;
-  initials: string;
 }
 
 interface AppHeaderProps {

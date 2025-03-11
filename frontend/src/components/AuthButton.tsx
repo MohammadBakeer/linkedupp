@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { createClientSideSupabaseClient } from '@/lib/supabase';
 
 interface AuthButtonProps {
   children: React.ReactNode;
@@ -24,7 +25,7 @@ export function AuthButton({ children, className, variant = 'default' }: AuthBut
   const [view, setView] = useState<'sign_up' | 'sign_in'>('sign_up');
   const router = useRouter();
   
-  const supabase = createClientComponentClient();
+  const supabase = createClientSideSupabaseClient();
 
   // Listen for auth state changes
   useEffect(() => {
@@ -121,6 +122,46 @@ export function AuthButton({ children, className, variant = 'default' }: AuthBut
   const toggleView = () => {
     setView(view === 'sign_up' ? 'sign_in' : 'sign_up');
     setMessage(null);
+  };
+
+  const handleLogin = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Sign in with Supabase Auth
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+    } catch (error) {
+      console.error('Error logging in:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Sign out with Supabase Auth
+      await supabase.auth.signOut();
+      
+      // Refresh the page to update UI
+      router.refresh();
+      
+    } catch (error) {
+      console.error('Error logging out:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
