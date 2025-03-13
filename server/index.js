@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 
 // Routes
-import authRoutes from './routes/authRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -35,8 +35,8 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to LinkedUpp API' });
 });
 
-// Auth routes
-app.use('/api/auth', authRoutes);
+// Api routes
+app.use('/api', profileRoutes);
 
 // Add your other routes here
 // app.use('/api/users', userRoutes);

@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createClientSideSupabaseClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
+import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 interface AuthButtonProps {
   children: React.ReactNode;
@@ -25,21 +25,23 @@ export function AuthButton({ children, className, variant = 'default' }: AuthBut
   const [view, setView] = useState<'sign_up' | 'sign_in'>('sign_up');
   const router = useRouter();
   
-  const supabase = createClientSideSupabaseClient();
+  const supabase = createClient();
 
   // Listen for auth state changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-        console.log('Auth state changed:', event, session);
-        
-        // Close the auth modal
-        setShowAuth(false);
-        
-        // Redirect to console page
-        router.push('/console');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event: AuthChangeEvent, session: Session | null) => {
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          console.log('Auth state changed:', event, session);
+          
+          // Close the auth modal
+          setShowAuth(false);
+          
+          // Redirect to console page
+          router.push('/console');
+        }
       }
-    });
+    );
 
     return () => {
       subscription.unsubscribe();

@@ -5,6 +5,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { cookies } from 'next/headers'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = {
   title: 'LinkedUpp Console',
@@ -19,18 +20,25 @@ export const metadata: Metadata = {
 // This is a server component (no 'use client' directive)
 export default async function ConsolePage() {
   // Create a Supabase client for the server component
-  const supabase = createServerComponentClient({ cookies });
+  // Using the new pattern for Next.js 15
+  const supabase = await createClient();
   
-  // Get the session and user data
+  // Get the user data directly (more reliable than session)
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // If no user, redirect to home page
+  if (!user) {
+    console.log('No authenticated user in console page, redirecting to home');
+    redirect('/');
+  }
+  
+  // Get the session for the access token
   const { data: { session } } = await supabase.auth.getSession();
   
-  // Get the user data securely (as recommended by Supabase)
-  const { data: { user } } = session 
-    ? await supabase.auth.getUser() 
-    : { data: { user: null } };
-  
-  // Log authentication status
-  console.log('Console page: User authenticated:', !!session);
+  // Log authentication status (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Console page: User authenticated as:', user.email);
+  }
   
   // Default user data
   let userData = {
@@ -45,16 +53,21 @@ export default async function ConsolePage() {
       email: user.email || userData.email,
     };
     
-    console.log('Using authenticated user data');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Using authenticated user data');
+    }
     
     // Get the access token directly from the session
     if (session?.access_token) {
-      console.log('Found access token in session, making API call');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Found access token in session, making API call');
+      }
       
       try {
-        // Call the backend API with the token
+        // Call the backend API with the token - with proper caching
         const response = await fetch('http://localhost:8000/api/profile', {
-          cache: 'no-store',
+          // Use next.js built-in caching
+          next: { revalidate: 60 }, // Revalidate every 60 seconds
           headers: {
             'Authorization': `Bearer ${session.access_token}`
           }
